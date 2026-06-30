@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Café Claude</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500&family=Noto+Serif+KR:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:       #0d0500;
+      --surface:  #1a0b02;
+      --panel:    #251208;
+      --rim:      #3d1f08;
+      --gold:     #c8922a;
+      --gold-dim: #7a5518;
+      --cream:    #f5e8cc;
+      --muted:    #c49a6c;
+      --fade:     #8a6845;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', 'Noto Sans KR', sans-serif;
+      background: var(--bg);
+      color: var(--cream);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2.5rem 1rem 3rem;
+      position: relative;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
+      opacity: 0.035; pointer-events: none; z-index: 0;
+    }
+    body::after {
+      content: '';
+      position: fixed; top: -120px; left: 50%; transform: translateX(-50%);
+      width: 600px; height: 400px;
+      background: radial-gradient(ellipse, rgba(200,146,42,0.12) 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+    }
+    .container { width: 100%; max-width: 680px; position: relative; z-index: 1; }
+
+    /* ── Header ─────────────────────────────────── */
+    .header { text-align: center; margin-bottom: 2rem; }
+    .steam-row { display: flex; justify-content: center; gap: 7px; height: 28px; margin-bottom: 0.5rem; }
+    .steam {
+      width: 2px; height: 22px;
+      background: linear-gradient(to top, rgba(245,232,204,0.35), transparent);
+      border-radius: 2px;
+      animation: steamUp 2.2s ease-in-out infinite;
+    }
+    .steam:nth-child(2) { animation-delay: 0.4s; }
+    .steam:nth-child(3) { animation-delay: 0.8s; }
+    @keyframes steamUp {
+      0%   { transform: translateY(0) scaleX(1);      opacity: 0.45; }
+      50%  { transform: translateY(-9px) scaleX(1.4); opacity: 0.7; }
+      100% { transform: translateY(-18px) scaleX(0.7); opacity: 0; }
+    }
+    .logo {
+      font-family: 'Playfair Display', 'Noto Serif KR', serif;
+      font-size: 2.4rem; font-weight: 700;
+      color: var(--gold);
+      text-shadow: 0 0 50px rgba(200,146,42,0.45);
+      letter-spacing: 0.06em;
+    }
+    .tagline {
+      font-size: 0.82rem; letter-spacing: 0.28em;
+      text-transform: uppercase; color: var(--muted); margin-top: 0.3rem;
+    }
+
+    /* ── Divider ─────────────────────────────────── */
+    .divider {
+      display: flex; align-items: center; gap: 0.9rem; margin: 1.2rem 0;
+      font-size: 0.75rem; letter-spacing: 0.22em;
+      text-transform: uppercase; color: var(--muted);
+    }
+    .divider::before, .divider::after {
+      content: ''; flex: 1; height: 1px;
+      background: linear-gradient(to right, transparent, var(--rim), transparent);
+    }
+
+    /* ── Sound Panel ─────────────────────────────── */
+    .sound-panel {
+      background: var(--surface); border: 1px solid var(--rim);
+      border-radius: 14px; padding: 1.2rem 1.3rem 1.3rem; margin-bottom: 1.4rem;
+    }
+    .panel-label {
+      font-size: 0.78rem; letter-spacing: 0.15em;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 1rem;
+    }
+    .sound-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.55rem; margin-bottom: 1rem; }
+    .snd-btn {
+      background: var(--panel); border: 1px solid var(--rim); border-radius: 10px;
+      padding: 0.75rem 0.3rem 0.65rem; cursor: pointer;
+      color: var(--muted); font-size: 0.82rem; font-family: 'Noto Sans KR', sans-serif;
+      letter-spacing: 0.03em; text-align: center;
+      display: flex; flex-direction: column; align-items: center; gap: 0.35rem;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+      user-select: none;
+    }
+    .snd-btn .ico { font-size: 1.25rem; line-height: 1; }
+    .snd-btn:hover { border-color: var(--gold-dim); color: var(--cream); }
+    .snd-btn.on {
+      background: rgba(200,146,42,0.1); border-color: var(--gold); color: var(--gold);
+      animation: glowPulse 2.4s ease-in-out infinite;
+    }
+    @keyframes glowPulse {
+      0%, 100% { box-shadow: 0 0 8px rgba(200,146,42,0.18); }
+      50%       { box-shadow: 0 0 22px rgba(200,146,42,0.45); }
+    }
+    .eq-bars { display: none; gap: 2px; align-items: flex-end; height: 10px; }
+    .snd-btn.on .eq-bars { display: flex; }
+    .snd-btn.on .ico { display: none; }
+    .eq-bar { width: 3px; background: var(--gold); border-radius: 1px; animation: eqBounce 0.6s ease-in-out infinite alternate; }
+    .eq-bar:nth-child(1) { height: 4px;  animation-delay: 0s; }
+    .eq-bar:nth-child(2) { height: 8px;  animation-delay: 0.15s; }
+    .eq-bar:nth-child(3) { height: 6px;  animation-delay: 0.05s; }
+    .eq-bar:nth-child(4) { height: 10px; animation-delay: 0.2s; }
+    @keyframes eqBounce { from { transform: scaleY(0.4); } to { transform: scaleY(1); } }
+
+    .vol-row { display: flex; align-items: center; gap: 0.8rem; }
+    .vol-label { font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+    input[type=range] { -webkit-appearance: none; flex: 1; height: 3px; background: var(--rim); border-radius: 3px; outline: none; }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 15px; height: 15px;
+      background: var(--gold); border-radius: 50%; cursor: pointer;
+      box-shadow: 0 0 8px rgba(200,146,42,0.55);
+    }
+
+    /* ── Chat History ────────────────────────────── */
+    .chat-wrap {
+      background: var(--surface); border: 1px solid var(--rim);
+      border-radius: 14px; padding: 1.2rem;
+      min-height: 220px; max-height: 440px;
+      overflow-y: auto;
+      display: flex; flex-direction: column; gap: 1rem;
+      margin-bottom: 1rem;
+      scroll-behavior: smooth;
+      position: relative;
+    }
+    .chat-wrap::-webkit-scrollbar { width: 4px; }
+    .chat-wrap::-webkit-scrollbar-track { background: transparent; }
+    .chat-wrap::-webkit-scrollbar-thumb { background: var(--rim); border-radius: 4px; }
+
+    .empty-state {
+      margin: auto;
+      text-align: center; padding: 1.5rem 0;
+      font-family: 'Noto Serif KR', 'Playfair Display', serif;
+      font-style: italic; font-size: 1rem; color: var(--fade);
+      line-height: 1.8;
+    }
+
+    .msg { display: flex; flex-direction: column; max-width: 88%; }
+    .msg-user { align-self: flex-end; }
+    .msg-ai   { align-self: flex-start; }
+
+    .msg-label {
+      font-size: 0.68rem; letter-spacing: 0.15em;
+      text-transform: uppercase; margin-bottom: 0.3rem;
+    }
+    .msg-user .msg-label  { color: var(--fade); text-align: right; }
+    .msg-ai   .msg-label  { color: var(--gold); }
+
+    .msg-bubble {
+      padding: 0.85rem 1.05rem;
+      font-size: 1rem; line-height: 1.78;
+      font-family: 'Inter', 'Noto Sans KR', sans-serif;
+    }
+    .msg-user .msg-bubble {
+      background: var(--panel); border: 1px solid var(--rim);
+      border-radius: 14px 14px 4px 14px; color: var(--cream);
+    }
+    .msg-ai .msg-bubble {
+      background: rgba(200,146,42,0.07); border: 1px solid rgba(200,146,42,0.2);
+      border-radius: 14px 14px 14px 4px; color: var(--cream);
+    }
+    .msg-bubble a {
+      color: var(--gold); text-decoration: underline;
+      text-decoration-color: rgba(200,146,42,0.45);
+      text-underline-offset: 2px;
+    }
+    .msg-bubble a:hover { text-decoration-color: var(--gold); }
+
+    /* typing indicator */
+    .typing-bubble { display: flex; gap: 5px; align-items: center; }
+    .t-dot {
+      width: 7px; height: 7px; background: var(--muted); border-radius: 50%;
+      animation: tBounce 1.1s ease-in-out infinite;
+    }
+    .t-dot:nth-child(2) { animation-delay: 0.18s; }
+    .t-dot:nth-child(3) { animation-delay: 0.36s; }
+    @keyframes tBounce {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+      30% { transform: translateY(-6px); opacity: 1; }
+    }
+
+    /* ── Input ───────────────────────────────────── */
+    .input-wrap {
+      background: var(--surface); border: 1px solid var(--rim);
+      border-radius: 14px; padding: 0.85rem 0.85rem 0.85rem 1.2rem;
+      display: flex; gap: 0.7rem; align-items: center;
+      transition: border-color 0.25s;
+    }
+    .input-wrap:focus-within { border-color: var(--gold-dim); }
+    #user-input {
+      flex: 1; background: transparent; border: none; outline: none;
+      color: var(--cream); font-size: 1.05rem;
+      font-family: 'Inter', 'Noto Sans KR', sans-serif;
+    }
+    #user-input::placeholder { color: var(--fade); }
+    #send-btn {
+      background: var(--gold); color: var(--bg); border: none; border-radius: 9px;
+      padding: 0.6rem 1.25rem;
+      font-size: 0.82rem; font-weight: 700;
+      font-family: 'Noto Sans KR', sans-serif;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      cursor: pointer; white-space: nowrap;
+      transition: opacity 0.2s, box-shadow 0.2s;
+    }
+    #send-btn:hover { opacity: 0.88; box-shadow: 0 0 18px rgba(200,146,42,0.4); }
+    #send-btn:disabled { opacity: 0.35; cursor: default; box-shadow: none; }
+
+    #status {
+      text-align: center; margin-top: 0.7rem;
+      font-size: 0.78rem; color: var(--muted);
+      letter-spacing: 0.1em; min-height: 1.1em;
+    }
+    .footer {
+      margin-top: 2.5rem; font-size: 0.75rem; letter-spacing: 0.15em;
+      text-transform: uppercase; color: var(--fade); text-align: center;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header class="header">
+    <div class="steam-row">
+      <div class="steam"></div><div class="steam"></div><div class="steam"></div>
+    </div>
+    <div class="logo">☕ Café Claude</div>
+    <div class="tagline">AI Espresso Bar &nbsp;·&nbsp; Est. 2024</div>
+  </header>
+
+  <div class="divider">ambient sound</div>
+
+  <div class="sound-panel">
+    <div class="panel-label">BGM 컨트롤 — 버튼을 눌러 사운드를 켜세요</div>
+    <div class="sound-grid">
+      <button class="snd-btn" data-ch="jazz" onclick="toggle('jazz')">
+        <span class="ico">🎷</span>
+        <div class="eq-bars"><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div></div>
+        <span>재즈</span>
+      </button>
+      <button class="snd-btn" data-ch="crowd" onclick="toggle('crowd')">
+        <span class="ico">🗣️</span>
+        <div class="eq-bars"><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div></div>
+        <span>사람들</span>
+      </button>
+      <button class="snd-btn" data-ch="machine" onclick="toggle('machine')">
+        <span class="ico">☕</span>
+        <div class="eq-bars"><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div></div>
+        <span>커피머신</span>
+      </button>
+      <button class="snd-btn" data-ch="ambient" onclick="toggle('ambient')">
+        <span class="ico">🌫️</span>
+        <div class="eq-bars"><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div></div>
+        <span>앰비언트</span>
+      </button>
+    </div>
+    <div class="vol-row">
+      <span class="vol-label">볼륨</span>
+      <input type="range" id="vol" min="0" max="100" value="80" oninput="setVol(this.value)" />
+      <span class="vol-label" id="vol-pct">80%</span>
+    </div>
+  </div>
+
+  <div class="divider">대화</div>
+
+  <!-- Chat history -->
+  <div class="chat-wrap" id="chat-wrap">
+    <div class="empty-state" id="empty-state">
+      무엇이든 물어보세요.<br>오늘의 스페셜처럼 바로 준비해 드립니다.
+    </div>
+  </div>
+
+  <div class="input-wrap">
+    <input id="user-input" type="text" placeholder="질문을 입력하세요..." />
+    <button id="send-btn">주문하기</button>
+  </div>
+  <div id="status"></div>
+
+  <div class="footer">powered by OpenAI &nbsp;·&nbsp; API key secured server-side</div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════
+   AUDIO ENGINE
+═══════════════════════════════════════════ */
+let ctx = null, master = null;
+const state = {}, handles = {};
+
+function ensureCtx() {
+  if (ctx) return;
+  ctx = new (window.AudioContext || window.webkitAudioContext)();
+  master = ctx.createGain();
+  master.gain.value = 0.8;
+  master.connect(ctx.destination);
+}
+
+function noiseBuf(secs, type) {
+  const n = Math.ceil(ctx.sampleRate * secs);
+  const b = ctx.createBuffer(1, n, ctx.sampleRate);
+  const d = b.getChannelData(0);
+  if (type === 'white') {
+    for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+  } else if (type === 'brown') {
+    let l = 0;
+    for (let i = 0; i < n; i++) {
+      const w = Math.random() * 2 - 1;
+      d[i] = (l + 0.02 * w) / 1.02; l = d[i]; d[i] *= 3.5;
+    }
+  } else if (type === 'pink') {
+    let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+    for (let i = 0; i < n; i++) {
+      const w = Math.random() * 2 - 1;
+      b0=0.99886*b0+w*0.0555179; b1=0.99332*b1+w*0.0750759;
+      b2=0.96900*b2+w*0.1538520; b3=0.86650*b3+w*0.3104856;
+      b4=0.55000*b4+w*0.5329522; b5=-0.7616*b5-w*0.0168980;
+      d[i]=(b0+b1+b2+b3+b4+b5+b6+w*0.5362)*0.11; b6=w*0.115926;
+    }
+  }
+  return b;
+}
+
+/* Ambient: brown noise + low-pass */
+function startAmbient() {
+  const src = ctx.createBufferSource();
+  src.buffer = noiseBuf(5, 'brown'); src.loop = true;
+  const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 180;
+  const g  = ctx.createGain(); g.gain.value = 0.65;
+  src.connect(lp); lp.connect(g); g.connect(master); src.start();
+  return { stop: () => { try { src.stop(); } catch(e){} } };
+}
+
+/* Crowd: pink noise + band-pass + LFO */
+function startCrowd() {
+  const src = ctx.createBufferSource();
+  src.buffer = noiseBuf(6, 'pink'); src.loop = true;
+  const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 850; bp.Q.value = 0.7;
+  const g  = ctx.createGain(); g.gain.value = 0.55;
+  const lfo = ctx.createOscillator(); lfo.frequency.value = 0.25;
+  const lfoG = ctx.createGain(); lfoG.gain.value = 0.08;
+  lfo.connect(lfoG); lfoG.connect(g.gain);
+  src.connect(bp); bp.connect(g); g.connect(master);
+  src.start(); lfo.start();
+  return { stop: () => { try { src.stop(); lfo.stop(); } catch(e){} } };
+}
+
+/* Coffee machine: periodic noise bursts */
+function startMachine() {
+  let dead = false, tid = null;
+  function burst() {
+    if (dead) return;
+    const dur = 1.2 + Math.random() * 2.2;
+    const n = Math.ceil(ctx.sampleRate * dur);
+    const b = ctx.createBuffer(1, n, ctx.sampleRate);
+    const d = b.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+    const src = ctx.createBufferSource(); src.buffer = b;
+    const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 1100;
+    const g  = ctx.createGain(); const t = ctx.currentTime;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.75, t + 0.12);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur * 0.9);
+    src.connect(hp); hp.connect(g); g.connect(master); src.start(t);
+    if (Math.random() > 0.4) {
+      const r2 = ctx.createBufferSource(); r2.buffer = noiseBuf(dur * 0.6, 'brown');
+      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 120;
+      const rg = ctx.createGain(); rg.gain.value = 0.3;
+      r2.connect(lp); lp.connect(rg); rg.connect(master); r2.start(t + 0.1);
+    }
+    tid = setTimeout(burst, (6 + Math.random() * 9) * 1000);
+  }
+  burst();
+  return { stop: () => { dead = true; clearTimeout(tid); } };
+}
+
+/* Jazz: oscillator sequencer */
+function startJazz() {
+  let dead = false, schedTid = null;
+  const jg = ctx.createGain(); jg.gain.value = 0.48; jg.connect(master);
+
+  const delay  = ctx.createDelay(0.4); delay.delayTime.value = 0.11;
+  const dlyfb  = ctx.createGain(); dlyfb.gain.value = 0.22;
+  const dlyOut = ctx.createGain(); dlyOut.gain.value = 0.32;
+  delay.connect(dlyfb); dlyfb.connect(delay);
+  delay.connect(dlyOut); dlyOut.connect(jg);
+
+  const BPM = 90, BEAT = 60 / BPM, BAR = BEAT * 4;
+  const BASS  = [65.41, 77.78, 87.31, 98.00, 110.00, 103.83, 87.31, 77.78];
+  const MEL   = [523.25, 554.37, 587.33, 622.25, 659.25, 739.99, 783.99, 698.46, 622.25, 587.33];
+  const CHORDS = [
+    [130.81, 155.56, 185.00, 220.00],
+    [116.54, 138.59, 164.81, 196.00],
+    [98.00,  123.47, 146.83, 174.61],
+    [87.31,  110.00, 130.81, 155.56],
+  ];
+
+  function note(freq, t, dur, wave, vol, dest) {
+    if (dead) return;
+    const o = ctx.createOscillator(); const g = ctx.createGain();
+    o.type = wave; o.frequency.value = freq;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(vol, t + 0.018);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur * 0.92);
+    o.connect(g); g.connect(dest || jg);
+    o.start(t); o.stop(t + dur + 0.05);
+  }
+
+  function schedBar(t) {
+    const bi = Math.floor(Math.random() * 5);
+    for (let b = 0; b < 4; b++)
+      note(BASS[(bi + b) % BASS.length], t + b * BEAT, BEAT * 0.88, 'sine', 0.55);
+    const ch = CHORDS[Math.floor(Math.random() * CHORDS.length)];
+    [0.5, 2.5, 3.25].forEach(beat => {
+      if (Math.random() > 0.3)
+        ch.forEach(f => note(f, t + beat * BEAT, BEAT * 0.22, 'triangle', 0.1));
+    });
+    let cursor = 0;
+    while (cursor < 8) {
+      if (Math.random() > 0.42) {
+        const f   = MEL[Math.floor(Math.random() * MEL.length)];
+        const len = 0.5 + Math.random() * 1.0;
+        const mt  = t + cursor * BEAT * 0.5 + (Math.random() * 0.04 - 0.02);
+        note(f, mt, BEAT * len * 0.88, 'sine', 0.13);
+        note(f, mt, BEAT * len * 0.88, 'sine', 0.04, delay);
+        cursor += Math.ceil(len * 2);
+      } else { cursor++; }
+    }
+  }
+
+  let nextBar = ctx.currentTime + 0.05;
+  function schedule() {
+    if (dead) return;
+    while (nextBar < ctx.currentTime + 0.55) { schedBar(nextBar); nextBar += BAR; }
+    schedTid = setTimeout(schedule, 180);
+  }
+  schedule();
+  return { stop: () => { dead = true; clearTimeout(schedTid); } };
+}
+
+function toggle(ch) {
+  ensureCtx();
+  if (ctx.state === 'suspended') ctx.resume();
+  const btn = document.querySelector(`[data-ch="${ch}"]`);
+  if (state[ch]) {
+    handles[ch]?.stop(); delete handles[ch];
+    state[ch] = false; btn.classList.remove('on');
+  } else {
+    state[ch] = true; btn.classList.add('on');
+    if (ch === 'jazz')    handles[ch] = startJazz();
+    if (ch === 'crowd')   handles[ch] = startCrowd();
+    if (ch === 'machine') handles[ch] = startMachine();
+    if (ch === 'ambient') handles[ch] = startAmbient();
+  }
+}
+
+function setVol(v) {
+  document.getElementById('vol-pct').textContent = v + '%';
+  if (master) master.gain.value = v / 100;
+}
+
+/* ═══════════════════════════════════════════
+   CHAT
+═══════════════════════════════════════════ */
+const chatWrap = document.getElementById('chat-wrap');
+const emptyEl  = document.getElementById('empty-state');
+const inp      = document.getElementById('user-input');
+const sendBtn  = document.getElementById('send-btn');
+const statusEl = document.getElementById('status');
+
+const history  = []; // { role, content }
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function renderMarkdown(text) {
+  let h = escHtml(text);
+  // [label](url) → <a>
+  h = h.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
+    '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+  // newlines
+  h = h.replace(/\n/g, '<br>');
+  return h;
+}
+
+function addBubble(role, text) {
+  if (emptyEl) emptyEl.remove();
+  const wrap = document.createElement('div');
+  wrap.className = `msg msg-${role === 'user' ? 'user' : 'ai'}`;
+  const label = document.createElement('div');
+  label.className = 'msg-label';
+  label.textContent = role === 'user' ? '나' : 'Café Claude';
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble';
+  if (role === 'user') {
+    bubble.textContent = text;
+  } else {
+    bubble.innerHTML = renderMarkdown(text);
+  }
+  wrap.appendChild(label);
+  wrap.appendChild(bubble);
+  chatWrap.appendChild(wrap);
+  chatWrap.scrollTop = chatWrap.scrollHeight;
+  return wrap;
+}
+
+function addTyping() {
+  const wrap = document.createElement('div');
+  wrap.className = 'msg msg-ai'; wrap.id = 'typing-indicator';
+  const label = document.createElement('div');
+  label.className = 'msg-label'; label.textContent = 'Café Claude';
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble typing-bubble';
+  bubble.innerHTML = '<div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div>';
+  wrap.appendChild(label); wrap.appendChild(bubble);
+  if (emptyEl) emptyEl.remove();
+  chatWrap.appendChild(wrap);
+  chatWrap.scrollTop = chatWrap.scrollHeight;
+}
+
+function removeTyping() {
+  const el = document.getElementById('typing-indicator');
+  if (el) el.remove();
+}
+
+async function send() {
+  const msg = inp.value.trim();
+  if (!msg) return;
+  inp.value = '';
+  addBubble('user', msg);
+  history.push({ role: 'user', content: msg });
+
+  sendBtn.disabled = true;
+  addTyping();
+
+  try {
+    const r = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: history }),
+    });
+    const d = await r.json();
+    const reply = d.reply ?? d.error ?? '오류가 발생했습니다.';
+    removeTyping();
+    history.push({ role: 'assistant', content: reply });
+    addBubble('assistant', reply);
+  } catch {
+    removeTyping();
+    addBubble('assistant', '서버와 통신하는 중 오류가 발생했습니다.');
+  } finally {
+    sendBtn.disabled = false;
+    statusEl.textContent = '';
+  }
+}
+
+sendBtn.addEventListener('click', send);
+inp.addEventListener('keydown', e => { if (e.key === 'Enter') send(); });
+</script>
+</body>
+</html>

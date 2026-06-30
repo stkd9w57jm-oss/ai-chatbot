@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(cd \"c:\\\\Users\\\\Administrator\\\\Desktop\\\\Salesforce\\\\front\\\\day18\\\\ai-chatbot\"; $job = Start-Job { node \"c:\\\\Users\\\\Administrator\\\\Desktop\\\\Salesforce\\\\front\\\\day18\\\\ai-chatbot\\\\server.js\" }; Start-Sleep 2; Receive-Job $job; Stop-Job $job; Remove-Job $job)",
+      "PowerShell($job = Start-Job { Set-Location \"c:\\\\Users\\\\Administrator\\\\Desktop\\\\Salesforce\\\\front\\\\day18\\\\ai-chatbot\"; node server.js }; Start-Sleep 3; Receive-Job $job; Stop-Job $job; Remove-Job $job)",
+      "PowerShell($job = Start-Job { Set-Location \"c:\\\\Users\\\\Administrator\\\\Desktop\\\\Salesforce\\\\front\\\\day18\\\\ai-chatbot\"; node server.js }; Start-Sleep 3; $resp = Invoke-RestMethod -Method POST -Uri \"http://localhost:3000/api/chat\" -ContentType \"application/json\" -Body '{\"message\":\"안녕! 한 문장으로 자기소개 해줘.\"}'; Write-Output $resp.reply; Stop-Job $job; Remove-Job $job)",
+      "PowerShell($job = Start-Job { Set-Location \"c:\\\\Users\\\\Administrator\\\\Desktop\\\\Salesforce\\\\front\\\\day18\\\\ai-chatbot\"; node server.js }; Start-Sleep 3; $resp = Invoke-RestMethod -Method POST -Uri \"http://localhost:3000/api/chat\" -ContentType \"application/json\" -Body '{\"message\":\"What is 2+2? Answer in one short sentence.\"}'; Write-Output $resp.reply; Stop-Job $job; Remove-Job $job)"
+    ]
+  }
+}
